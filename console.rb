@@ -20,23 +20,30 @@ loop do
     case parts[0]
     when "create_file"
         if parts[1]
-            if parts[2..]
-                # Create file with specified content
-                new_file = File.new(parts[1], parts[2..].join(" "))
+            if !current_dir.get_element(parts[1])
+                if parts[2..]
+                    # Create file with specified content
+                    new_file = File.new(parts[1], parts[2..].join(" "))
+                else
+                    # Create empty file 
+                    new_file = File.new(parts[1], "")
+                end
+                current_dir.add_file(new_file)
             else
-                # Create empty file 
-                new_file = File.new(parts[1], "")
+                puts "'#{parts[1]}' already exists in the current directory."
             end
-            current_dir.add_file(new_file)
         else
             puts "You have to specify a file name"
         end
 
     when "create_folder"
         if parts[1]
-
-            new_folder = Directory.new(parts[1], current_dir)
-            current_dir.add_folder(new_folder)
+            if !current_dir.get_element(parts[1])
+                new_folder = Directory.new(parts[1], current_dir)
+                current_dir.add_folder(new_folder)
+            else
+                puts "'#{parts[1]}' already exists in the current directory."
+            end
         else
             puts "You have to specify a folder name"
         end

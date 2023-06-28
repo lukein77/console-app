@@ -6,11 +6,11 @@ end
 def get_command_list
     return "
     Available commands:
-    create_file <name> <content?>   - creates a file with optional content
-    create_folder <name>            - creates a folder
-    cd <folder>                     - enters a directory
-    ls                              - shows the content of the current directory
-    metadata <file/folder>          - shows the metadata of a file or folder
-    exit                            - exits the application
+    create_file <name> <content?>   - create a file with optional content
+    create_folder <name>            - create a folder
+    cd <folder>                     - enter a directory
+    ls                              - show the content of the current directory
+    metadata <file/folder>          - show the metadata of a file or folder
+    exit                            - exit the application
     "
 end
