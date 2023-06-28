@@ -1,4 +1,5 @@
 require_relative 'file.rb'
+require_relative 'directory.rb'
 
 # Main program loop
 puts "Console app v0.1"
@@ -35,9 +36,22 @@ loop do
             puts "You have to specify a file name"
         end
 
+    when "create_folder"
+        if parts[1]
+            new_file = Directory.new(parts[1], "nobody")
+            files.push(new_file)
+        else
+            puts "You have to specify a folder name"
+        end
+
     when "show"
         if !files.empty?
             puts files[0].show
+        end
+
+    when "metadata"
+        if parts[1]
+            puts files[0].metadata
         end
             
     when "exit"
