@@ -1,4 +1,4 @@
-require 'utils'
+require_relative 'utils.rb'
 
 class File
     def initialize(name, content)
