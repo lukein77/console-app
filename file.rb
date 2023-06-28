@@ -11,6 +11,11 @@ class File
         @updated_at = @created_at
     end
     
+    def rename(name)
+        @name = name
+        update_metadata
+    end
+
     def show
         @content
     end

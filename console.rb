@@ -5,7 +5,7 @@ require_relative 'exceptions.rb'
 
 # Write a welcome message
 puts "Console app v0.1"
-puts "Write 'exit' to close the app"
+puts "Use 'exit' to close the app. Use 'help' to get a list of all available commands."
 puts ""
 
 root_dir = Directory.new('', nil)  # Create root directory, which has no parent directory
@@ -75,6 +75,16 @@ begin
 			puts "Aborted."
 		end
 
+	when "rename"
+		raise IncompleteCommandError, "missing file/folder name" if !parts[1]
+
+		f = current_dir.get_element(parts[1])
+		raise FileNotFoundError, parts[1] if f.nil?
+
+		print "New name: "
+		new_name = gets.chomp
+		f.rename(new_name)
+
     when "ls"
         puts current_dir.show
 
@@ -108,4 +118,5 @@ rescue FileNotFoundError => e
 rescue FolderNotFoundError => e 
 	puts "Folder not found: #{e.message}"
 end
+
 end
