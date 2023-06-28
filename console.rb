@@ -76,14 +76,13 @@ begin
 		end
 
 	when "rename"
-		raise IncompleteCommandError, "missing file/folder name" if !parts[1]
+		raise IncompleteCommandError, "missing file/folder name" if !parts[1]asd
+		raise IncompleteCommandError, "missing new name" unless parts[2]
 
 		f = current_dir.get_element(parts[1])
 		raise FileNotFoundError, parts[1] if f.nil?
 
-		print "New name: "
-		new_name = gets.chomp
-		f.rename(new_name)
+		f.rename(parts[2])
 
     when "ls"
         puts current_dir.show
