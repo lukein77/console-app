@@ -1,11 +1,10 @@
 require_relative 'file.rb'
 
 class Directory < File
-    attr_accessor :parent
+    attr_accessor :parent, :children
 
     def initialize(name, parent)
-        super(name, [])
-        @parent = parent
+        super(name, [], parent)
         @children = []
     end
     
@@ -24,16 +23,32 @@ class Directory < File
     end
 
     def get_folder(name)
-        if name == ".." 
-            return @parent
-        elsif name == "."
-            return self
-        end
+        return @parent if name == ".."
+        return self if name == "." 
         @children.find { |folder| folder.name == name }
     end
 
     def get_file(name)
         @content.find { |file| file.name == name }
+    end
+    
+    def find_and_delete(name)
+        # If it's a file, just delete it
+        f = get_file(name)
+        return @content.delete(f) unless f.nil?
+
+        # If it's a directory, we have to delete everything inside it first
+        f = get_folder(name)
+        f.destroy
+        @children.delete(f)        
+    end
+
+    def destroy
+        @content.clear
+        @children.each do |dir| 
+            dir.destroy
+        end
+        @children.clear
     end
 
     def show
@@ -42,11 +57,7 @@ class Directory < File
     end
 
     def full_path
-        if @parent
-            @parent.full_path + @name + "/" 
-        else
-            @name
-        end
+        location + @name + "/"
     end
 
 end

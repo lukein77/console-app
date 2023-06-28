@@ -7,7 +7,7 @@ puts "Console app v0.1"
 puts "Write 'exit' to close the app"
 puts ""
 
-root_dir = Directory.new('/', nil)  # Create root directory, which has no parent directory
+root_dir = Directory.new('', nil)  # Create root directory, which has no parent directory
 current_dir = root_dir              # Set current directory as root
 
 # Main program loop
@@ -23,10 +23,10 @@ loop do
             if !current_dir.get_element(parts[1])
                 if parts[2..]
                     # Create file with specified content
-                    new_file = File.new(parts[1], parts[2..].join(" "))
+                    new_file = File.new(parts[1], parts[2..].join(" "), current_dir)
                 else
                     # Create empty file 
-                    new_file = File.new(parts[1], "")
+                    new_file = File.new(parts[1], "", current_dir)
                 end
                 current_dir.add_file(new_file)
             else
@@ -54,7 +54,7 @@ loop do
             if file
                 puts file.content
             else
-                puts "File "+parts[1]+" not found."
+                puts "File #{parts[1]} not found."
             end
         else
             puts "You have to specify a file name"
@@ -66,10 +66,27 @@ loop do
             if folder
                 current_dir = folder
             else
-                puts "Folder not found."
+                puts "Folder #{parts[1]} not found."
             end
         else
             puts "You have to specify a folder name"
+        end
+
+    when "destroy"
+        if parts[1]
+            print "Are you sure you want to delete #{parts[1]}? (Y to continue): "
+            answer = gets.chomp.downcase
+            if (answer == "y")
+                if current_dir.find_and_delete(parts[1])
+                    puts "#{parts[1]} deleted."
+                else
+                    puts "#{parts[1]} not found."
+                end
+            else
+                puts "Aborted."
+            end
+        else
+            puts "You have to specify a name"
         end
 
     when "ls"

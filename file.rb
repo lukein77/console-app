@@ -3,9 +3,10 @@ require_relative 'utils.rb'
 class File
     attr_accessor :name, :content, :created_at, :updated_at
 
-    def initialize(name, content)
+    def initialize(name, content, parent)
         @name = name
         @content = content
+        @parent = parent
         @created_at = get_current_time()
         @updated_at = @created_at
     end
@@ -15,8 +16,22 @@ class File
     end
 
     def metadata
-        data = @name + @created_at + @updated_at
+        return "
+    Name: #{@name}
+    Created: #{@created_at}
+    Last modified: #{@updated_at}
+    Location: #{location}
+        "
     end
+
+    def location
+        if @parent
+            @parent.full_path
+        else
+            return ''
+        end
+    end
+
 
     private
 
