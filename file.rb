@@ -18,4 +18,10 @@ class File
         data = @name + @created_at + @updated_at
     end
 
+    private
+
+    def update_metadata
+        @updated_at = get_current_time()
+    end
+
 end
