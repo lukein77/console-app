@@ -39,6 +39,8 @@ class Directory < File
 
         # If it's a directory, we have to delete everything inside it first
         f = get_folder(name)
+        return nil if f.nil?
+        
         f.destroy
         @children.delete(f)        
     end
