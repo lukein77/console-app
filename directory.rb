@@ -1,7 +1,7 @@
 require_relative 'file.rb'
 
 class Directory < File
-    attr_accessor :parent, :children
+    attr_accessor :children
 
     # Initialize directory.
     # @content = files, @children = subdirectories, @parent = parent directory

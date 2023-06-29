@@ -1,8 +1,9 @@
 require_relative 'utils.rb'
 
 class File
-    attr_accessor :name, :content, :created_at, :updated_at
+    attr_accessor :name, :parent
 
+    # Initialize file
     def initialize(name, content, parent)
         @name = name
         @content = content
@@ -11,15 +12,18 @@ class File
         @updated_at = @created_at
     end
     
+    # Rename file
     def rename(name)
         @name = name
         update_metadata
     end
 
+    # Show file content
     def show
         @content
     end
 
+    # Show metadata
     def metadata
         return "
     Name: #{@name}
@@ -29,6 +33,7 @@ class File
         "
     end
 
+    # Get file location
     def location
         if @parent
             @parent.full_path

@@ -21,7 +21,7 @@ begin
 
     case parts[0]
     when "create_file"
-        raise IncompleteCommandError, "missing file name" if !parts[1]
+        raise IncompleteCommandError, "missing file name" if parts[1].nil?
         raise FileExistsError if current_dir.get_element(parts[1])
 			
 		if parts[2..]
@@ -34,34 +34,32 @@ begin
 		current_dir.add_file(new_file)
 
     when "create_folder"
-		raise IncompleteCommandError, "missing folder name" if !parts[1]
+		raise IncompleteCommandError, "missing folder name" if parts[1].nil?
 		raise FileExistsError if current_dir.get_element(parts[1])
 
 		new_folder = Directory.new(parts[1], current_dir)
 		current_dir.add_folder(new_folder)
 
     when "show"
-		raise IncompleteCommandError, "missing file name" if !parts[1]
+		raise IncompleteCommandError, "missing file name" if parts[1].nil?
 
 		file = current_dir.get_file(parts[1])
 		if file
-			puts file.content
+			puts file.show
 		else
 			raise FileNotFoundError, parts[1]
 		end
 
     when "cd"
-        raise IncompleteCommandError, "missing folder name" if !parts[1]
+        raise IncompleteCommandError, "missing path" if parts[1].nil?
 
-		folder = current_dir.get_folder(parts[1])
-		if folder
-			current_dir = folder
-		else
-			raise FolderNotFoundError, parts[1]
-		end
+		dir = current_dir.get_relative_path(parts[1])
+		raise PathNotFoundError, parts[1] if !dir
+
+		current_dir = dir
 
 	when "showpath"
-		raise IncompleteCommandError, "missing path" if !parts[1]
+		raise IncompleteCommandError, "missing path" if parts[1].nil?
 
 		dir = current_dir.get_relative_path(parts[1])
 		raise PathNotFoundError, parts[1] if !dir
@@ -70,7 +68,7 @@ begin
 
 
     when "destroy"
-		raise IncompleteCommandError, "missing file/folder name" if !parts[1]
+		raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
 		
 		print "Are you sure you want to delete #{parts[1]}? (Y to continue): "
 		answer = gets.chomp.downcase
@@ -85,8 +83,8 @@ begin
 		end
 
 	when "rename"
-		raise IncompleteCommandError, "missing file/folder name" if !parts[1]
-		raise IncompleteCommandError, "missing new name" unless parts[2]
+		raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
+		raise IncompleteCommandError, "missing new name" if parts[2].nil?
 
 		f = current_dir.get_element(parts[1])
 		raise FileNotFoundError, parts[1] if f.nil?
@@ -97,7 +95,7 @@ begin
         puts current_dir.show
 
     when "metadata"
-		raise IncompleteCommandError, "missing file/folder name" if !parts[1]
+		raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
 
 		f = current_dir.get_element(parts[1])
         raise FileNotFoundError, parts[1] if f.nil?
