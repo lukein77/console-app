@@ -8,7 +8,7 @@ puts "Console app v0.1"
 puts "Use 'exit' to close the app. Use 'help' to get a list of all available commands."
 puts ""
 
-root_dir = Directory.new('', nil)  # Create root directory, which has no parent directory
+root_dir = Directory.new('', nil)  	# Create root directory, which has no parent directory
 current_dir = root_dir              # Set current directory as root
 
 # Main program loop
@@ -60,6 +60,15 @@ begin
 			raise FolderNotFoundError, parts[1]
 		end
 
+	when "showpath"
+		raise IncompleteCommandError, "missing path" if !parts[1]
+
+		dir = current_dir.get_relative_path(parts[1])
+		raise PathNotFoundError, parts[1] if !dir
+		
+		puts dir.show
+
+
     when "destroy"
 		raise IncompleteCommandError, "missing file/folder name" if !parts[1]
 		
@@ -76,7 +85,7 @@ begin
 		end
 
 	when "rename"
-		raise IncompleteCommandError, "missing file/folder name" if !parts[1]asd
+		raise IncompleteCommandError, "missing file/folder name" if !parts[1]
 		raise IncompleteCommandError, "missing new name" unless parts[2]
 
 		f = current_dir.get_element(parts[1])
@@ -116,6 +125,8 @@ rescue FileNotFoundError => e
 	puts "File not found: #{e.message}"
 rescue FolderNotFoundError => e 
 	puts "Folder not found: #{e.message}"
+rescue PathNotFoundError => e 
+	puts "Path not found: #{e.message}"
 end
 
 end

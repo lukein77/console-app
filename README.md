@@ -1,23 +1,24 @@
 # Console app
 
-Simple app that simulates a console to handle files and directories using commands.
+Aplicación simple que simula una consola para manejar archivos y carpetas desde una línea de comandos.
 
-### How to run
+### Cómo ejecutar
 
 `ruby console.rb`
 
-### Available commands
+### Comandos disponibles
 
-Command | Functionality 
---- | --- 
-`create_file <name> <content>` | create a file with optional content
-`create_folder <name> `         | create a folder
-`destroy <name>`                  | delete a file or folder
-`rename <name> <new name>`         | rename a file or folder
-`cd <folder>`                     | enter a directory
-`show <filename>`                 | show the contents of a file
-`ls`                              | show the content of the current directory
-`metadata <file/folder>`          | show the metadata of a file or folder
-`whereami`                        | show the full path of the current directory
-`help`                            | show list of available commands
-`exit`                            | exit the application
+Comando | Funcionalidad | Ejemplo
+--- | --- | ---
+`create_file <name> <content>` | crear un archivo con contenido opcional |  `create_file hola.txt Hola`
+`create_folder <name> `         | crear una carpeta |  `create_folder carpeta`
+`destroy <name>`              | eliminar un archivo o carpeta | `destroy hola.txt`
+`rename <name> <new name>`         | renombrar un archivo o carpeta |   `rename carpeta carpeta2`
+`cd <folder>`                     | acceder a un directorio |   `cd carpeta2`
+`show <filename>`                 | mostrar el contenido de un archivo  |   `show hola.txt`
+`ls`                              | mostrar el contenido del directorio actual  |   
+`metadata <file/folder>`          | mostrar la metadata de un archivo o carpeta |   `metadata hola.txt`
+`whereami`                        | mostrar la ruta de la carpeta actual    |   
+`help`                            | mostrar lista de comandos disponibles   |
+`exit`                            | salir de la aplicación |
+
