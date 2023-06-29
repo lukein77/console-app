@@ -8,6 +8,12 @@ Aplicación simple que simula una consola para manejar archivos y carpetas desde
 
 ### Comandos disponibles
 
+<style scoped>
+table {
+  font-size: 13px;
+}
+</style>
+
 Comando | Funcionalidad | Ejemplo
 --- | --- | ---
 `create_file <name> <content>` | crear un archivo con contenido opcional |  `create_file hola.txt Hola`
