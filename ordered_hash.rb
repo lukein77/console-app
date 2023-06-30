@@ -45,5 +45,4 @@ class OrderedHash
         Hash[@keys.zip(ordered_values)]
     end
 
-
 end

@@ -11,6 +11,7 @@ puts ""
 root_dir = Directory.new('', nil)  	# Create root directory, which has no parent directory
 current_dir = root_dir              # Set current directory as root
 
+
 # Main program loop
 loop do 
 begin
@@ -53,18 +54,11 @@ begin
     when "cd"
         raise IncompleteCommandError, "missing path" if parts[1].nil?
 
-		dir = current_dir.get_relative_path(parts[1])
+		dir = current_dir.get_path(parts[1])
 		raise PathNotFoundError, parts[1] if !dir
 
+		raise IsNotDirectoryError, parts[1] unless dir.is_a? Directory
 		current_dir = dir
-
-	when "showpath"
-		raise IncompleteCommandError, "missing path" if parts[1].nil?
-
-		dir = current_dir.get_relative_path(parts[1])
-		raise PathNotFoundError, parts[1] if !dir
-		
-		puts dir.show
 
     when "destroy"
 		raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
@@ -91,7 +85,13 @@ begin
 		f.rename(parts[2])
 
     when "ls"
-        puts current_dir.show
+		if !parts[1]
+			puts current_dir.show
+		else
+			dir = current_dir.get_path(parts[1])
+			raise PathNotFoundError, parts[1] if !dir
+			puts dir.show
+		end
 
     when "metadata"
 		raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
@@ -124,6 +124,8 @@ rescue FolderNotFoundError => e
 	puts "Folder not found: #{e.message}"
 rescue PathNotFoundError => e 
 	puts "Path not found: #{e.message}"
+rescue IsNotDirectoryError => e 
+	puts "Error: #{e.message} is not a directory"
 end
 
 end

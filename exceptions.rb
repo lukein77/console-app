@@ -12,3 +12,6 @@ end
 
 class PathNotFoundError < StandardError
 end
+
+class IsNotDirectoryError < StandardError
+end
