@@ -59,8 +59,7 @@ class Directory < File
 
     # Show directory's full content (ls command)
     def show
-        #@content.map(&:name).join(" ")
-        return nil
+        @content.map(&:name).join(" ")
     end
 
     # Return full path to this directory
