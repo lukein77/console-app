@@ -1,42 +1,25 @@
 require_relative 'file.rb'
+require_relative 'ordered_hash.rb'
 
 class Directory < File
-    attr_accessor :children
 
-    # Initialize directory.
-    # @content = files, @children = subdirectories, @parent = parent directory
+    # Initialize directory
     def initialize(name, parent)
         super(name, [], parent)
-        @children = []
+        @content = OrderedHash.new
     end
-    
-    # Add a folder to subdirectories
-    def add_folder(folder)
-        @children.push(folder)
+
+    # Add a file or folder to the directory
+    def add(f)
+        @content[f.name] = f
         update_metadata
     end
 
-    # Add a file to directory's content
-    def add_file(file)
-        @content.push(file)
-        update_metadata
-    end
-
-    # Get file or folder from its name
-    def get_element(name)
-        get_folder(name) || get_file(name)
-    end
-
-    # Return a folder from its name
-    def get_folder(name)
+    # Return a file or folder by its name
+    def get(name)
         return @parent if name == ".."
         return self if name == "." 
-        @children.find { |folder| folder.name == name }
-    end
-
-    # Return a file from its name
-    def get_file(name)
-        @content.find { |file| file.name == name }
+        @content[name]
     end
 
     # Return a directory from a relative path. 
@@ -47,41 +30,37 @@ class Directory < File
 
         dir = self
         path.each do |d|            
-			dir = dir.get_folder(d)
+			dir = dir.get(d)
 			return nil if dir.nil?
 		end
 
         return dir
     end
-    
+
     # Find an element and delete it
     def find_and_delete(name)
-        # If it's a file, just delete it
-        f = get_file(name)
-        return @content.delete(f) unless f.nil?
+        f = get(name)
 
-        # If it's a directory, we have to delete everything inside it first
-        f = get_folder(name)
-        return nil if f.nil?
-        
-        f.destroy
-        @children.delete(f)        
+        return nil if f.nil?    # File not found
+
+        if f.is_a? Directory    # If it's a directory, delete all its contents
+            f.destroy
+        end
+
+        @content.delete(name)   # Remove element from directory
     end
 
-    # Destroy directory. 
+    # Destroy directory.
     # This function is called when deleting from parent directory
     def destroy
+        @content.each { |f| f.destroy if f.is_a? Directory }
         @content.clear
-        @children.each do |dir| 
-            dir.destroy
-        end
-        @children.clear
     end
 
     # Show directory's full content (ls command)
     def show
-        @full_dir = @children + @content
-        @full_dir.map(&:name).join(" ")
+        #@content.map(&:name).join(" ")
+        return nil
     end
 
     # Return full path to this directory

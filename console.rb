@@ -22,7 +22,7 @@ begin
     case parts[0]
     when "create_file"
         raise IncompleteCommandError, "missing file name" if parts[1].nil?
-        raise FileExistsError if current_dir.get_element(parts[1])
+        raise FileExistsError if current_dir.get(parts[1])
 			
 		if parts[2..]
 			# Create file with specified content
@@ -31,19 +31,19 @@ begin
 			# Create empty file 
 			new_file = File.new(parts[1], "", current_dir)
 		end
-		current_dir.add_file(new_file)
+		current_dir.add(new_file)
 
     when "create_folder"
 		raise IncompleteCommandError, "missing folder name" if parts[1].nil?
-		raise FileExistsError if current_dir.get_element(parts[1])
+		raise FileExistsError if current_dir.get(parts[1])
 
 		new_folder = Directory.new(parts[1], current_dir)
-		current_dir.add_folder(new_folder)
+		current_dir.add(new_folder)
 
     when "show"
 		raise IncompleteCommandError, "missing file name" if parts[1].nil?
 
-		file = current_dir.get_file(parts[1])
+		file = current_dir.get(parts[1])
 		if file
 			puts file.show
 		else
@@ -66,7 +66,6 @@ begin
 		
 		puts dir.show
 
-
     when "destroy"
 		raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
 		
@@ -86,7 +85,7 @@ begin
 		raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
 		raise IncompleteCommandError, "missing new name" if parts[2].nil?
 
-		f = current_dir.get_element(parts[1])
+		f = current_dir.get(parts[1])
 		raise FileNotFoundError, parts[1] if f.nil?
 
 		f.rename(parts[2])
@@ -97,7 +96,7 @@ begin
     when "metadata"
 		raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
 
-		f = current_dir.get_element(parts[1])
+		f = current_dir.get(parts[1])
         raise FileNotFoundError, parts[1] if f.nil?
         
 		puts f.metadata
