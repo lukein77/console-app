@@ -6,10 +6,41 @@ require_relative 'exceptions.rb'
 class Console
 	attr_accessor :root_dir, :current_dir, :running
 
-	def initialize
-		@root_dir = Directory.new('', nil)  	# Create root directory, which has no parent directory
-		@current_dir = @root_dir              	# Set current directory as root
+	def initialize(filename=nil)
+		@filename = filename
+		if @filename.nil?
+			@root_dir = Directory.new('', nil)  	# Create root directory, which has no parent directory
+		else
+			# User provided a file name for persistence
+			load
+		end
+
+		@current_dir = @root_dir              # Set current directory as root
 		@running = true
+	end
+
+	def load
+		# Load root_dir from file
+		# If file is not found, create a new root directory
+		begin
+			File.open(@filename, 'rb') do |file|
+				@root_dir = Marshal.load(file.read)
+			end
+		rescue Errno::ENOENT
+			@root_dir = Directory.new('', nil)
+		end
+	end
+
+	def save
+		File.open(@filename, 'wb') do |file|
+			file.write(Marshal.dump(@root_dir))
+		end
+		puts "Saved workspace to #{@filename}"
+	end
+
+	def exit
+		@running = false
+		save if @filename
 	end
 	
 	def welcome_message
@@ -28,12 +59,14 @@ class Console
 			return @current_dir.get_path(path)
 		end
 	end
-	
+
+
+
 	def loop
 		begin
 			print @current_dir.full_path+"> "
 			
-			command = gets.chomp        # Get user input and remove \n
+			command = STDIN.gets.chomp        # Get user input and remove \n
 			parts = command.split(" ")  # Separate command into parts
 		
 			case parts[0]
@@ -43,10 +76,10 @@ class Console
 					
 				if parts[2..]
 					# Create file with specified content
-					new_file = File.new(parts[1], parts[2..].join(" "), @current_dir)
+					new_file = MyFile.new(parts[1], parts[2..].join(" "), @current_dir)
 				else
 					# Create empty file 
-					new_file = File.new(parts[1], "", @current_dir)
+					new_file = MyFile.new(parts[1], "", @current_dir)
 				end
 				@current_dir.add(new_file)
 		
@@ -126,7 +159,7 @@ class Console
 				puts @current_dir.full_path
 					
 			when "exit"
-				@running = false
+				self.exit
 		
 			else
 				puts "Command not recognized. Use 'help' to get a list of the available commands."

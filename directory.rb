@@ -1,7 +1,7 @@
 require_relative 'file.rb'
 require_relative 'ordered_hash.rb'
 
-class Directory < File
+class Directory < MyFile
 
     # Initialize directory
     def initialize(name, parent)

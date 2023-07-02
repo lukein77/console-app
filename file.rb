@@ -1,6 +1,6 @@
 require_relative 'utils.rb'
 
-class File
+class MyFile
     attr_accessor :name, :parent
 
     # Initialize file
