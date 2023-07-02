@@ -2,13 +2,11 @@ require_relative 'file.rb'
 require_relative 'ordered_hash.rb'
 
 class Directory < File
-    @@root = nil
 
     # Initialize directory
     def initialize(name, parent)
         super(name, [], parent)
         @content = OrderedHash.new
-        @@root ||= self
     end
 
     # Add a file or folder to the directory
@@ -27,15 +25,7 @@ class Directory < File
     # Return a directory from a relative path. 
     # If it's not found or the path is incorrect, return nil
     def get_path(path)
-        return nil if path.nil? || path.empty?
-        
-        if path[0] == "/"
-            dir = @@root
-            path = path[1..]
-        else
-            dir = self
-        end
-
+        dir = self
         path = path.split("/")
         
         path.each do |d|            
