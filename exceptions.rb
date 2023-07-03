@@ -15,3 +15,12 @@ end
 
 class IsNotDirectoryError < StandardError
 end
+
+class UserAlreadyExistsError < StandardError
+end
+
+class UserNotExistsError < StandardError
+end
+
+class UserNotAuthenticatedError < StandardError
+end

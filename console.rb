@@ -2,6 +2,9 @@ require_relative 'file.rb'
 require_relative 'directory.rb'
 require_relative 'utils.rb'
 require_relative 'exceptions.rb'
+require_relative 'authenticator.rb'
+require_relative 'session.rb'
+require 'io/console'
 
 class Console
 	attr_accessor :root_dir, :current_dir, :running
@@ -9,13 +12,16 @@ class Console
 	def initialize(filename=nil)
 		@filename = filename
 		if @filename.nil?
-			@root_dir = Directory.new('', nil)  	# Create root directory, which has no parent directory
+			@root_dir = Directory.new('', nil, nil)  	# Create root directory, which has no parent directory
 		else
 			load_root
 		end
 
 		@current_dir = @root_dir              # Set current directory as root
 		@running = true
+		
+		@logged_in = nil
+		Authenticator.load
 	end
 
 	# Load root directory from file
@@ -26,7 +32,7 @@ class Console
 				@root_dir = Marshal.load(file.read)
 			end
 		rescue Errno::ENOENT
-			@root_dir = Directory.new('', nil)
+			@root_dir = Directory.new('', nil, nil)
 		end
 	end
 
@@ -42,6 +48,7 @@ class Console
 	# Leave main loop and save root dir if necessary
 	def exit
 		@running = false
+		Authenticator.save 
 		save_root if @filename		# if user provided a file for persistence, save the directory
 	end
 	
@@ -67,7 +74,7 @@ class Console
 	def create_file(name, content="")
 		raise FileExistsError if @current_dir.get(name)
 
-		new_file = MyFile.new(name, content, @current_dir)
+		new_file = MyFile.new(name, content, @current_dir, @logged_in.username)
 		
 		@current_dir.add(new_file)
 	end
@@ -76,7 +83,7 @@ class Console
 	def create_folder(name)
 		raise FileExistsError if @current_dir.get(name)
 		
-		new_folder = Directory.new(name, @current_dir)
+		new_folder = Directory.new(name, @current_dir, @logged_in.username)
 		@current_dir.add(new_folder)
 	end
 
@@ -135,22 +142,46 @@ class Console
 		puts f.metadata
 	end
 
+	# Create a new user
+	def create_user(username)
+		password = IO::console.getpass "Enter password for #{username}: "
+
+		Authenticator.new_user(username, password)
+		puts "User #{username} successfully created."
+	end
+
+	# Log in as an existing user
+	def login(username)
+		password = IO::console.getpass "Enter password for #{username}: "
+
+		@logged_in = Authenticator.authenticate_user(username, password)
+		if @logged_in
+			puts "Logged in successfully"
+		else
+			puts "Login information incorrect"
+		end
+	end
+
+
 	# Main console loop for inputting commands
 	def loop
 		begin
-			print @current_dir.full_path+"> "
+			print "#{@logged_in.username}@" if @logged_in
+			print "console:#{@current_dir.full_path}> "
 			
-			command = STDIN.gets.chomp        # Get user input and remove \n
-			parts = command.split(" ")  # Separate command into parts
+			command = STDIN.gets.chomp      # Get user input and remove \n
+			parts = command.split(" ")  		# Separate command into parts
 		
 			case parts[0]
 			when "create_file"
 				raise IncompleteCommandError, "missing file name" if parts[1].nil?
+				raise UserNotAuthenticatedError unless @logged_in
 				content = parts[2..] ? parts[2..].join(" ") : ""
 				create_file(parts[1], content)
 		
 			when "create_folder"
 				raise IncompleteCommandError, "missing folder name" if parts[1].nil?
+				raise UserNotAuthenticatedError unless @logged_in
 				create_folder(parts[1])
 		
 			when "show"
@@ -163,18 +194,8 @@ class Console
 		
 			when "destroy"
 				raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
+				raise UserNotAuthenticatedError unless @logged_in
 				delete(parts[1])
-		
-			# when "rename"
-			# 	raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
-			# 	raise IncompleteCommandError, "missing new name" if parts[2].nil?
-		
-			# 	raise FileExistsError, parts[2] unless @current_dir.get(parts[2]).nil?
-		
-			# 	f = @current_dir.get(parts[1])
-			# 	raise FileNotFoundError, parts[1] if f.nil?
-		
-			# 	f.rename(parts[2])
 		
 			when "ls"
 				show_dir(parts[1])
@@ -188,7 +209,25 @@ class Console
 		
 			when "whereami"
 				puts @current_dir.full_path
-					
+
+			when "create_user"
+				raise IncompleteCommandError, "missing username" if parts[1].nil?
+				create_user(parts[1])
+			
+			when "login"
+				raise IncompleteCommandError, "missing username" if parts[1].nil?
+				login(parts[1])
+
+			when "logout"
+				@logged_in = nil
+
+			when "whoami"
+				if @logged_in
+					puts "Logged in as #{@logged_in.username} since #{@logged_in.start_time}"
+				else
+					puts "Not authenticated"
+				end
+
 			when "exit"
 				self.exit
 		
@@ -208,6 +247,12 @@ class Console
 			puts "Path not found: #{e.message}"
 		rescue IsNotDirectoryError => e 
 			puts "Error: #{e.message} is not a directory"
+		rescue UserAlreadyExistsError => e 
+			puts "Cannot register #{e.message}: user already exists"
+		rescue UserNotExistsError => e 
+			puts "User #{e.message} doesn't exist"
+		rescue UserNotAuthenticatedError => e   
+			puts "You have to be logged in to perform that action."
 		end
 		
 	end

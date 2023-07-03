@@ -4,8 +4,8 @@ require_relative 'ordered_hash.rb'
 class Directory < MyFile
 
   # Initialize directory
-  def initialize(name, parent)
-		super(name, [], parent)
+  def initialize(name, parent, owner)
+		super(name, [], parent, owner)
 		@content = OrderedHash.new
   end
 

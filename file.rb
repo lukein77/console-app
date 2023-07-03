@@ -4,10 +4,11 @@ class MyFile
 	attr_accessor :name, :parent
 
 	# Initialize file
-	def initialize(name, content, parent)
+	def initialize(name, content, parent, owner)
 		@name = name
 		@content = content
 		@parent = parent
+		@owner = owner
 		@created_at = get_current_time()
 		@updated_at = @created_at
 	end
@@ -30,6 +31,7 @@ class MyFile
 	Created: #{@created_at}
 	Last modified: #{@updated_at}
 	Location: #{location}
+	Owner: #{@owner}
 			"
 	end
 
