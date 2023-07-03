@@ -2,11 +2,16 @@
 
 Aplicación simple que simula una consola para manejar archivos y carpetas desde una línea de comandos.
 
+---
+
 ### Cómo ejecutar
+
+Para iniciar la aplicación 
 
 `ruby main.rb`
 
-Para persistir los archivos creados:
+Para iniciar con persistencia a un archivo:
+
 `ruby main.rb -p <nombre_archivo>`
 
 ### Comandos disponibles
