@@ -12,12 +12,12 @@ class Console
 	def initialize(filename=nil)
 		@filename = filename
 		if @filename.nil?
-			@root_dir = Directory.new('', nil, nil)  	# Create root directory, which has no parent directory
+			new_root  	
 		else
 			load_root
 		end
 
-		@current_dir = @root_dir              # Set current directory as root
+		@current_dir = @root_dir              
 		@running = true
 		
 		@logged_in = nil
@@ -32,7 +32,11 @@ class Console
 				@root_dir = Marshal.load(file.read)
 			end
 		rescue Errno::ENOENT
-			@root_dir = Directory.new('', nil, nil)
+			new_root
+		rescue TypeError
+			puts "File type not recognized. Workspace won't be saved."
+			new_root
+			@filename = nil
 		end
 	end
 
@@ -43,6 +47,11 @@ class Console
 			file.write(Marshal.dump(@root_dir))
 		end
 		puts "Saved workspace to #{@filename}"
+	end
+
+	# Create root directory, which has no parent directory
+	def new_root
+		@root_dir = Directory.new('', nil, nil)
 	end
 
 	# Leave main loop and save root dir if necessary
