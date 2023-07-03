@@ -11,17 +11,16 @@ class Console
 		if @filename.nil?
 			@root_dir = Directory.new('', nil)  	# Create root directory, which has no parent directory
 		else
-			# User provided a file name for persistence
-			load
+			load_root
 		end
 
 		@current_dir = @root_dir              # Set current directory as root
 		@running = true
 	end
 
-	def load
-		# Load root_dir from file
-		# If file is not found, create a new root directory
+	# Load root directory from file
+	# If file is not found, create a new root directory, which will be persisted when user exits
+	def load_root
 		begin
 			File.open(@filename, 'rb') do |file|
 				@root_dir = Marshal.load(file.read)
@@ -31,25 +30,29 @@ class Console
 		end
 	end
 
-	def save
+	# Save root directory to file
+	# This method is only called if a filename was inputted
+	def save_root
 		File.open(@filename, 'wb') do |file|
 			file.write(Marshal.dump(@root_dir))
 		end
 		puts "Saved workspace to #{@filename}"
 	end
 
+	# Leave main loop and save root dir if necessary
 	def exit
 		@running = false
-		save if @filename
+		save_root if @filename		# if user provided a file for persistence, save the directory
 	end
 	
+	# Message displayed on startup
 	def welcome_message
-		# Write a welcome message
 		puts "Console app v0.1"
 		puts "Use 'exit' to close the app. Use 'help' to get a list of all available commands."
 		puts ""
 	end
 
+	# Differentiate between relative and absolute path and call the appropiate method
 	def get_path(path)
 		return nil if path.nil? || path.empty?
 		
@@ -60,8 +63,79 @@ class Console
 		end
 	end
 
+	# Create file with optional content (content should be a string)
+	def create_file(name, content="")
+		raise FileExistsError if @current_dir.get(name)
 
+		new_file = MyFile.new(name, content, @current_dir)
+		
+		@current_dir.add(new_file)
+	end
 
+	# Create a new directory
+	def create_folder(name)
+		raise FileExistsError if @current_dir.get(name)
+		
+		new_folder = Directory.new(name, @current_dir)
+		@current_dir.add(new_folder)
+	end
+
+	# Show the contents of a file
+	# If name is a directory, shows the directory's content
+	def show_file(name)
+		file = @current_dir.get(name)
+		if file
+			puts file.show
+		else
+			raise FileNotFoundError, name
+		end
+	end
+
+	# Changes the current directory
+	def change_directory(path)
+		dir = get_path(path)
+		raise PathNotFoundError, path if !dir
+
+		raise IsNotDirectoryError, path unless dir.is_a? Directory
+		@current_dir = dir
+	end
+
+	# Deletes a file or folder. First prompts the user for confirmation
+	def delete(name)
+		print "Are you sure you want to delete #{name}? (Y to continue): "
+		answer = STDIN.gets.chomp.downcase
+		if (answer == "y")
+			if @current_dir.find_and_delete(name)
+				puts "#{name} deleted."
+			else
+				raise FileNotFoundError, name
+			end
+		else
+			puts "Aborted."
+		end
+	end
+
+	# Show the content of the current directory or of the path provided
+	def show_dir(path=nil)
+		if !path
+			puts @current_dir.show
+		else
+			dir = get_path(path)
+			raise PathNotFoundError, path if !dir
+			puts dir.show
+		end
+	end
+
+	# Show a file/folder's metadata
+	def show_metadata(name)
+
+		f = @current_dir.get(name)
+		raise FileNotFoundError, name if f.nil?
+		
+		puts f.metadata
+	end
+
+	# Main console loop for inputting commands
 	def loop
 		begin
 			print @current_dir.full_path+"> "
@@ -72,57 +146,24 @@ class Console
 			case parts[0]
 			when "create_file"
 				raise IncompleteCommandError, "missing file name" if parts[1].nil?
-				raise FileExistsError if @current_dir.get(parts[1])
-					
-				if parts[2..]
-					# Create file with specified content
-					new_file = MyFile.new(parts[1], parts[2..].join(" "), @current_dir)
-				else
-					# Create empty file 
-					new_file = MyFile.new(parts[1], "", @current_dir)
-				end
-				@current_dir.add(new_file)
+				content = parts[2..] ? parts[2..].join(" ") : ""
+				create_file(parts[1], content)
 		
 			when "create_folder"
 				raise IncompleteCommandError, "missing folder name" if parts[1].nil?
-				raise FileExistsError if @current_dir.get(parts[1])
-		
-				new_folder = Directory.new(parts[1], @current_dir)
-				@current_dir.add(new_folder)
+				create_folder(parts[1])
 		
 			when "show"
 				raise IncompleteCommandError, "missing file name" if parts[1].nil?
-		
-				file = @current_dir.get(parts[1])
-				if file
-					puts file.show
-				else
-					raise FileNotFoundError, parts[1]
-				end
+				show_file(parts[1])
 		
 			when "cd"
 				raise IncompleteCommandError, "missing path" if parts[1].nil?
-		
-				dir = get_path(parts[1])
-				raise PathNotFoundError, parts[1] if !dir
-		
-				raise IsNotDirectoryError, parts[1] unless dir.is_a? Directory
-				@current_dir = dir
+				change_directory(parts[1])
 		
 			when "destroy"
 				raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
-				
-				print "Are you sure you want to delete #{parts[1]}? (Y to continue): "
-				answer = gets.chomp.downcase
-				if (answer == "y")
-					if @current_dir.find_and_delete(parts[1])
-						puts "#{parts[1]} deleted."
-					else
-						raise FileNotFoundError, parts[1]
-					end
-				else
-					puts "Aborted."
-				end
+				delete(parts[1])
 		
 			# when "rename"
 			# 	raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
@@ -136,21 +177,11 @@ class Console
 			# 	f.rename(parts[2])
 		
 			when "ls"
-				if !parts[1]
-					puts @current_dir.show
-				else
-					dir = get_path(parts[1])
-					raise PathNotFoundError, parts[1] if !dir
-					puts dir.show
-				end
+				show_dir(parts[1])
 		
 			when "metadata"
 				raise IncompleteCommandError, "missing file/folder name" if parts[1].nil?
-		
-				f = @current_dir.get(parts[1])
-				raise FileNotFoundError, parts[1] if f.nil?
-				
-				puts f.metadata
+				show_metadata(parts[1])
 		
 			when "help"
 				puts get_command_list

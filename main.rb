@@ -13,16 +13,17 @@ OptionParser.new do |opts|
 
 end.parse!
 
+filename = nil
+
 if options[:persisted]
-    filename = ARGV[0]
-    if filename.nil?
-        puts "You have to provide a file name"
-        exit
-    end
-    console = Console.new(filename)
-else
-    console = Console.new
+  filename = ARGV[0]
+  if filename.nil?
+    puts "You have to provide a file name"
+    exit
+  end
 end
+
+console = Console.new(filename)
 
 console.welcome_message
 while console.running
